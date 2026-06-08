@@ -20,20 +20,15 @@ try {
 }
 
 const API_CONFIGS = {
-    'cerebras-qwen': {
-        url: 'https://api.cerebras.ai/v1/chat/completions',
-        key: process.env.CEREBRAS_KEY,
-        model: 'qwen-3-235b-a22b-instruct-2507'
-    },
-    'groq-kimi': {
-        url: 'https://api.groq.com/openai/v1/chat/completions',
-        key: process.env.GROQ_KEY,
-        model: 'openai/gpt-oss-120b'
-    },
-    'mistral-large': {
+    'brebeuf-pro': {
         url: 'https://api.mistral.ai/v1/chat/completions',
         key: process.env.MISTRAL_KEY,
         model: 'mistral-large-latest'
+    },
+    'brebeuf-mini': {
+        url: 'https://api.groq.com/openai/v1/chat/completions',
+        key: process.env.GROQ_KEY,
+        model: 'llama-3.1-8b-instant'
     }
 };
 
