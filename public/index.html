@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SJDB AI | Buddy the Bear</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #0a0a0a;
+            --bg-sidebar: #111111;
+            --bg-card: #161616;
+            --accent: #ffd54a;
+            --accent-hover: #ffdf70;
+            --border: rgba(255, 255, 255, 0.08);
+            --text-main: #e5e5e5;
+            --text-muted: #a1a1aa;
+            --error: #ff6b6b;
+            --radius-lg: 12px;
+            --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: var(--font-main);
+            background: var(--bg-main);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .app-container { display: flex; width: 100%; height: 100vh; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+
+        .logo-container { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
+        .logo-icon {
+            width: 32px; height: 32px; background: var(--accent);
+            border-radius: 8px; display: flex; align-items: center;
+            justify-content: center; color: #000; font-weight: 800;
+        }
+
+        .sidebar-section { margin-bottom: 30px; }
+        .sidebar-label {
+            font-size: 11px; font-weight: 600; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: block;
+        }
+
+        /* Custom Dropdown */
+        .custom-select { position: relative; width: 100%; }
+        .custom-select select {
+            width: 100%; background: #1d1d1d; border: 1px solid var(--border);
+            color: white; padding: 12px 16px; border-radius: var(--radius-lg);
+            outline: none; cursor: pointer; font-family: inherit; appearance: none;
+            font-size: 14px; transition: all 0.2s;
+        }
+        .custom-select select:hover { border-color: rgba(255, 213, 74, 0.5); background: #252525; }
+        .custom-select::after {
+            content: ""; position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+            width: 10px; height: 6px; background-color: var(--text-muted);
+            clip-path: polygon(100% 0%, 0 0%, 50% 100%); pointer-events: none;
+        }
+
+        .new-chat-btn {
+            background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--border);
+            padding: 12px; border-radius: var(--radius-lg); cursor: pointer;
+            font-weight: 500; font-size: 14px; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .new-chat-btn:hover { background: white; color: black; }
+
+        /* Main Content */
+        .main-content {
+            flex: 1; display: flex; flex-direction: column;
+            background: radial-gradient(circle at top center, #111 0%, #0a0a0a 100%);
+        }
+
+        .chat-header {
+            padding: 18px 40px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; backdrop-filter: blur(10px);
+            background: rgba(10, 10, 10, 0.7); z-index: 10;
+        }
+
+        .model-badge {
+            background: var(--accent); color: #000; padding: 4px 10px;
+            border-radius: 6px; font-size: 11px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px; margin-left: 12px;
+        }
+
+        .chat-window { flex: 1; overflow-y: auto; padding: 40px 0; }
+        .message-container { max-width: 800px; margin: 0 auto; padding: 0 20px; display: flex; flex-direction: column; gap: 32px; }
+
+        .message { display: flex; flex-direction: column; gap: 8px; animation: fadeInUp 0.4s ease forwards; max-width: 85%; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .message.user { align-self: flex-end; align-items: flex-end; }
+        .message.assistant { align-self: flex-start; }
+
+        .bubble { padding: 12px 20px; border-radius: 18px; font-size: 15px; line-height: 1.6; }
+        .user .bubble { background: #222; border: 1px solid var(--border); border-bottom-right-radius: 4px; }
+        .assistant .bubble { background: transparent; padding-left: 0; }
+
+        .thinking { color: var(--text-muted); font-style: italic; display: flex; align-items: center; gap: 8px; }
+        .error-text { color: var(--error); font-weight: 500; }
+
+        /* Input Area */
+        .input-area { padding: 20px 40px 40px; max-width: 840px; width: 100%; margin: 0 auto; }
+        .input-wrapper {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 8px 12px 8px 24px; display: flex;
+            align-items: center; gap: 12px; transition: border-color 0.3s;
+        }
+        .input-wrapper:focus-within { border-color: rgba(255, 213, 74, 0.4); }
+        .input-wrapper input { flex: 1; background: transparent; border: none; color: white; outline: none; padding: 12px 0; font-size: 15px; }
+
+        .send-button {
+            background: var(--accent); border: none; width: 40px; height: 40px;
+            border-radius: 50%; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; transition: 0.2s;
+        }
+        .send-button:hover { transform: scale(1.05); background: var(--accent-hover); }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
+    </style>
+</head>
+
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<body>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo-container">
+                <div class="logo-icon">B</div>
+                <div class="logo-text" style="font-weight: 600; font-size: 18px;">Buddy AI</div>
+            </div>
+
+            <div class="sidebar-section">
+                <span class="sidebar-label">Intelligence</span>
+                <div class="custom-select">
+                    <select id="modelSelect">
+                        <option value="cerebras-qwen">Brebeuf Pro</option>
+                        <option value="groq-kimi">Brebeuf Lite</option>
+                        <option value="mistral-large">Mistral Large</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="new-chat-btn" onclick="confirmClear()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                New Session
+            </button>
+        </aside>
+
+        <main class="main-content">
+            <header class="chat-header">
+                <div style="font-size: 14px; font-weight: 500; color: var(--text-muted);">Conversation</div>
+                <div id="headerModelBadge" class="model-badge">Brebeuf Pro</div>
+            </header>
+
+            <section class="chat-window" id="chatWindow">
+                <div class="message-container" id="messageContainer">
+                    <!-- Default welcome message -->
+                </div>
+            </section>
+
+            <div class="input-area">
+                <form class="input-wrapper" id="chatForm">
+                    <input type="text" id="userInput" placeholder="Ask Buddy anything..." autocomplete="off">
+                    <button class="send-button" type="submit">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+                    </button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const messageContainer = document.getElementById('messageContainer');
+        const chatWindow = document.getElementById('chatWindow');
+        const chatForm = document.getElementById('chatForm');
+        const modelSelect = document.getElementById('modelSelect');
+        const headerBadge = document.getElementById('headerModelBadge');
+
+        let conversationHistory = [];
+        let currentModelValue = modelSelect.value;
+
+        modelSelect.addEventListener('change', () => {
+            const confirmed = confirm("Switching models will end your current conversation and clear the chat history. Are you sure?");
+            
+            if (confirmed) {
+                currentModelValue = modelSelect.value;
+                const selectedModelName = modelSelect.options[modelSelect.selectedIndex].text;
+                headerBadge.innerText = selectedModelName;
+                clearChat();
+            } else {
+                modelSelect.value = currentModelValue;
+            }
+        });
+
+        function confirmClear() {
+            if (conversationHistory.length > 0) {
+                if (confirm("Are you sure you want to clear this chat?")) clearChat();
+            } else {
+                clearChat();
+            }
+        }
+
+        marked.setOptions({
+            highlight: (code) => hljs.highlightAuto(code).value,
+            breaks: true
+        });
+
+        async function askAI(userMsg) {
+            appendMessage('user', userMsg);
+            conversationHistory.push({ role: "user", content: userMsg });
+            
+            const aiMsgDiv = appendMessage('assistant', '<span class="thinking">Thinking...</span>');
+            const bubble = aiMsgDiv.querySelector('.bubble');
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        modelId: modelSelect.value,
+                        messages: conversationHistory
+                    })
+                });
+
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullText = "";
+                bubble.innerHTML = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6).trim();
+                            if (data === '[DONE]') break;
+
+                            try {
+                                const json = JSON.parse(data);
+                                const content = json.choices[0].delta.content;
+
+                                if (content) {
+                                    fullText += content;
+
+                                    // Live markdown rendering
+                                    bubble.innerHTML = marked.parse(fullText);
+                                    chatWindow.scrollTop = chatWindow.scrollHeight;
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+
+                conversationHistory.push({ role: "assistant", content: fullText });
+
+                // ✅ Render LaTeX AFTER stream finishes (smooth)
+                if (window.MathJax) {
+                    MathJax.typesetPromise([bubble]);
+                }
+
+            } catch (err) {
+                console.error(err);
+                bubble.innerHTML = `<span class="error-text"><strong>Error:</strong> ${err.message}</span>`;
+            }
+        }
+
+        function appendMessage(role, text) {
+            const msg = document.createElement('div');
+            msg.className = `message ${role}`;
+
+            msg.innerHTML = `
+                <div class="bubble">
+                    ${role === 'assistant' && text !== '<span class="thinking">Thinking...</span>' 
+                        ? marked.parse(text) 
+                        : text}
+                </div>
+            `;
+
+            messageContainer.appendChild(msg);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            // ✅ Render LaTeX for non-streamed messages
+            if (window.MathJax && role === 'assistant') {
+                MathJax.typesetPromise([msg]);
+            }
+
+            return msg;
+        }
+
+        function clearChat() {
+            messageContainer.innerHTML = `
+                <div class="message assistant">
+                    <div class="bubble">
+                        <strong>Paws up!</strong> 🐾 I'm Buddy. Your new session is ready. Ask me anything about SJDB!
+                    </div>
+                </div>
+            `;
+            conversationHistory = [];
+        }
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('userInput');
+            if (!input.value.trim()) return;
+
+            askAI(input.value);
+            input.value = "";
+        });
+
+        clearChat();
+    </script>
+</body>
+</html>
