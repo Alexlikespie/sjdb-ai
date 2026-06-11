@@ -80,13 +80,13 @@ Student Wellbeing
 Major Clubs:
 Student Council – events, school spirit, student voice
 DECA – business competitions, networking, mentorship
-Robotics & Coding Club – engineering + FIRST Robotics (Instructed by Tauro)
+Robotics & Coding Club – engineering + FIRST Robotics (Instructed by Tauro) (recently launched a baloon to space to train this very AI chatbot and take stunning pictures of the Earth)
 Eco Club – environmental stewardship
 Peer Ministry – student support, inclusion
 Debate Club – media literacy, argumentation
 Black Students Alliance (BSA) – culture, awareness
 Women’s Empowerment Council – leadership + mentorship
-Athletic Council – intramurals, school spirit
+Athletic Council – intramurals, school spirit (Instructed by Vono and Tanel)
 Math Club – Waterloo contests + tutoring (Instructed by Agazzi and Zitoli)
 Video Club – school media production (Instructed by Gudelj)
 Additional Clubs
@@ -229,7 +229,7 @@ Department Heads include:
 DEPARTMENT HEADS (Major):
 - Arts: S. Artenosi (female)
 - Business: J. Buttigieg (male)
-- Canadian & World Studies: R. Gentile (female)
+- Canadian & World Studies: R. Gentile (female) (Geography)
 - Co-Op: T. Murphy
 - English: F. Racco (female)
 - Guidance: D. Lettieri (female)
@@ -245,7 +245,7 @@ TEACHING STAFF & ROLES:
 - Mathematics: C. Agazzi (female), S. Alfano (female), L. Di Blasio (female), D. Greto (male), K. Grosso (female), V. Lopreiato (female), L. Marchetti (female), R. Ottaviano (female), M. Sciulli (male), R. Acosta (female)
 - Science (all science teachers teach both general science alongside their specialization): C. Cerra (female), P. DeSantis (female) (biology), S. Lelli (female) (biology), S. Limanni (female) (chemistry), V. Lopreiato (female), G. Mirarchi (male) (physics), C. Piccoli, G. Tanel (female) (chemistry), B. Vono (male) (physics), A. Wu (female) (chemistry)
 - English: S. Cimicata (female), M. Jacques (male), C. Kitchen (female), D. McCullough (female), J. Murarotto (male), S. Pugliese, J. Venditti (male), M. Ventrella (male) (Credit Recovery/English)
-- Canadian & World Studies / Humanities: D. Brusco (female), A. Bussoli (female), M. Fusco, D. Giancola (male), F. Guerrisi (male), V. Lopreiato (female), J. Maglio, R. Racco (male)
+- Canadian & World Studies / Humanities: D. Brusco (female), A. Bussoli (female), M. Fusco, D. Giancola (male) (History), F. Guerrisi (male), V. Lopreiato (female), J. Maglio, R. Racco (male) (History)
 - Religion: L. Alonzi-Di Placido (female), R. Bucci, L. Carbone (male), A. Careri, V. Lopreiato (female), A. Micucci (female), A. Rubino (male), O. Terminesi (female), O. Testani (male), L. Vani (female)
 - Business: L. Basciano (female), S. Colangelo (male), M. D'Aiuto (male), J. Deiana, A. Pingitore (male), R. Quarin
 - Physical Education: J. Aguiar (male), V. Galloro (male), O. Ginjo (male), G Lionti (male)
@@ -258,6 +258,8 @@ TEACHING STAFF & ROLES:
 - Library: M. Battilana (female) (Teacher Librarian), J. Cohn (female) (Library Technician)*
 
 Teachers may teach multiple subjects
+
+Don't get Racco (Female, English) confused with Racco (Male, History)
 
 15. NAMESAKE
 
