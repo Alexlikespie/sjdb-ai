@@ -1371,7 +1371,13 @@
         const btn = e.target.closest('.model-option');
         if (!btn) return;
         const modelShort = btn.dataset.model;
-        const nextModelId = modelShort === 'pro' ? 'brebeuf-pro' : 'brebeuf-mini';
+        
+        if (modelShort === 'mini') {
+            window.location.href = 'mini-html/index.html';
+            return;
+        }
+
+        const nextModelId = 'brebeuf-pro';
         if (nextModelId === currentModelId) return;
 
         if (conversationHistory.length > 0) {
@@ -1665,22 +1671,35 @@ $$
 
         } catch (err) {
             console.error(err);
-            bubble.innerHTML = `
-                <div class="error-block">
-                    <div class="error-title">Hmm, something's not working.</div>
-                    <div class="error-body">${err.message || 'Maybe try again later or change models.'}</div>
-                    <div class="error-actions">
-                        <button class="btn btn-primary" type="button" data-action="retry">Try again</button>
+            const isRateLimit = err.message && /429|rate limit/i.test(err.message);
+            if (isRateLimit) {
+                // Remove the last user message to avoid duplication on retry
+                const popped = conversationHistory.pop();
+                bubble.innerHTML = `
+                    <div class="error-block">
+                        <div class="error-title">Rate limit exceeded</div>
+                        <div class="error-body">Waiting 12 seconds before retrying...</div>
                     </div>
-                </div>
-            `;
-            const retry = bubble.querySelector('[data-action="retry"]');
-            retry.addEventListener('click', () => {
-                const lastUserMsg = conversationHistory.pop()?.content;
-                if (lastUserMsg) {
-                    askAI(lastUserMsg);
-                }
-            });
+                `;
+                setTimeout(() => askAI(userMsg), 12000);
+            } else {
+                bubble.innerHTML = `
+                    <div class="error-block">
+                        <div class="error-title">Hmm, something's not working.</div>
+                        <div class="error-body">${err.message || 'Maybe try again later or change models.'}</div>
+                        <div class="error-actions">
+                            <button class="btn btn-primary" type="button" data-action="retry">Try again</button>
+                        </div>
+                    </div>
+                `;
+                const retry = bubble.querySelector('[data-action="retry"]');
+                retry.addEventListener('click', () => {
+                    const lastUserMsg = conversationHistory.pop()?.content;
+                    if (lastUserMsg) {
+                        askAI(lastUserMsg);
+                    }
+                });
+            }
         } finally {
             isSending = false;
             sendBtn.classList.remove('is-sending');

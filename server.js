@@ -23,7 +23,7 @@ const API_CONFIGS = {
     'brebeuf-pro': {
         url: 'https://api.mistral.ai/v1/chat/completions',
         key: process.env.MISTRAL_KEY,
-        model: 'mistral-large-latest'
+        model: 'mistral-small-latest'
     },
     'brebeuf-mini': {
         url: 'https://api.groq.com/openai/v1/chat/completions',
