@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Buddy Mini — Self-Hosted</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="description" content="Buddy Mini — a self-hosted, fine-tuned language model trained in the stratosphere. Run it locally with LM Studio.">
+
+    <link rel="icon" type="image/png" href="placeholder.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-0:        #070708;
+            --bg-1:        #0d0d10;
+            --bg-2:        #141418;
+            --bg-3:        #1c1c22;
+            --bg-elev:     #1f1f26;
+
+            --border-1:    rgba(255, 255, 255, 0.06);
+            --border-2:    rgba(255, 255, 255, 0.10);
+            --border-3:    rgba(255, 255, 255, 0.18);
+
+            --text-1:      #f3f3f5;
+            --text-2:      #b8b8c0;
+            --text-3:      #74747d;
+            --text-on-acc: #0a0a0a;
+
+            --accent:        #ffe14a;
+            --accent-bright: #fff07a;
+            --accent-soft:   rgba(255, 225, 74, 0.18);
+            --accent-glow:   rgba(255, 225, 74, 0.35);
+
+            --error:      #ff6363;
+            --success:    #6dffb3;
+
+            --r-md: 12px;
+            --r-lg: 16px;
+            --r-xl: 22px;
+            --r-pill: 999px;
+
+            --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+            --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; }
+        body {
+            font-family: var(--font-sans);
+            font-size: 15px;
+            line-height: 1.55;
+            color: var(--text-1);
+            background: var(--bg-0);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+        }
+        button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+        a { color: var(--accent); text-decoration: none; }
+        ::selection { background: var(--accent); color: var(--text-on-acc); }
+        :focus { outline: none; }
+        :focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 3px;
+            border-radius: 6px;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-3); }
+
+        /* Aurora — same family as the main app */
+        .aurora {
+            position: fixed; inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+            background: var(--bg-0);
+        }
+        .aurora::before,
+        .aurora::after {
+            content: "";
+            position: absolute;
+            width: 60vmax; height: 60vmax;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.45;
+            will-change: transform;
+        }
+        .aurora::before {
+            top: -25vmax; right: -20vmax;
+            background: radial-gradient(circle at 30% 30%, var(--accent) 0%, transparent 60%);
+            animation: aurora-drift-1 22s var(--ease) infinite alternate;
+        }
+        .aurora::after {
+            bottom: -30vmax; left: -25vmax;
+            background: radial-gradient(circle at 60% 60%, rgba(255, 225, 74, 0.55) 0%, transparent 65%);
+            animation: aurora-drift-2 28s var(--ease) infinite alternate;
+        }
+        .aurora-grain {
+            position: absolute; inset: 0;
+            background-image: radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 3px 3px;
+            mix-blend-mode: overlay;
+            opacity: 0.4;
+        }
+        @keyframes aurora-drift-1 {
+            0%   { transform: translate(0, 0)        rotate(0deg)  scale(1);    }
+            100% { transform: translate(-8vmax, 4vmax) rotate(40deg) scale(1.15); }
+        }
+        @keyframes aurora-drift-2 {
+            0%   { transform: translate(0, 0)         rotate(0deg)   scale(1);    }
+            100% { transform: translate(6vmax, -5vmax) rotate(-30deg) scale(1.1);  }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .aurora::before, .aurora::after { animation: none; }
+        }
+
+        /* Layout */
+        .shell {
+            position: relative; z-index: 1;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        /* Top bar — minimal */
+        .topbar {
+            display: flex; align-items: center; gap: 14px;
+            padding: 18px 32px;
+            border-bottom: 1px solid var(--border-1);
+            background: rgba(10, 10, 12, 0.55);
+            backdrop-filter: blur(20px) saturate(140%);
+            -webkit-backdrop-filter: blur(20px) saturate(140%);
+        }
+        .brand {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .brand-logo {
+            width: 40px; height: 40px;
+            border-radius: 11px;
+            background: var(--accent);
+            overflow: hidden;
+            display: grid; place-items: center;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 8px 24px -10px var(--accent-glow);
+        }
+        .brand-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .brand-name {
+            display: flex; flex-direction: column; line-height: 1.1;
+        }
+        .brand-name strong { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
+        .brand-name span {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-3);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-top: 3px;
+        }
+
+        .back-link {
+            margin-left: auto;
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 14px;
+            border-radius: var(--r-pill);
+            background: var(--bg-2);
+            border: 1px solid var(--border-1);
+            color: var(--text-2);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            transition: background var(--d-fast, 140ms) var(--ease), color var(--d-fast, 140ms) var(--ease), border-color var(--d-fast, 140ms) var(--ease);
+        }
+        .back-link:hover {
+            background: var(--bg-3);
+            color: var(--text-1);
+            border-color: var(--border-2);
+        }
+        .back-link svg { width: 12px; height: 12px; }
+
+        /* Main */
+        main {
+            flex: 1;
+            display: flex; flex-direction: column;
+            align-items: center;
+            padding: 48px 24px 64px;
+        }
+        .container {
+            width: 100%;
+            max-width: 880px;
+        }
+
+        /* Centerpiece — logo + LM mascot side by side */
+        .centerpiece {
+            display: flex; align-items: center; justify-content: center;
+            gap: 32px;
+            margin: 24px 0 40px;
+            animation: fade-in 600ms var(--ease) both;
+        }
+        .centerpiece .icon {
+            width: 132px; height: 132px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: grid; place-items: center;
+            overflow: hidden;
+            box-shadow: 0 20px 60px -16px var(--accent-glow), 0 0 0 6px rgba(255, 225, 74, 0.08);
+            animation: float 6s ease-in-out infinite;
+        }
+        .centerpiece .icon img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .centerpiece .plus {
+            font-family: var(--font-mono);
+            color: var(--text-3);
+            font-size: 32px;
+            font-weight: 300;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-6px); }
+        }
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Headline */
+        .headline {
+            text-align: center;
+            margin-bottom: 36px;
+            animation: fade-in 700ms 80ms var(--ease) both;
+        }
+        .eyebrow {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: var(--r-pill);
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        h1 {
+            font-size: 40px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 1.1;
+            margin-bottom: 14px;
+        }
+        h1 .accent { color: var(--accent); }
+        .lede {
+            color: var(--text-2);
+            font-size: 16px;
+            max-width: 620px;
+            margin: 0 auto;
+        }
+
+        /* Sections */
+        .sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin: 16px 0 32px;
+            animation: fade-in 700ms 160ms var(--ease) both;
+        }
+        .card {
+            padding: 20px;
+            background: var(--bg-2);
+            border: 1px solid var(--border-1);
+            border-radius: var(--r-lg);
+        }
+        .card h3 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .card h3 .num {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--accent);
+            background: var(--accent-soft);
+            border-radius: 4px;
+            padding: 2px 6px;
+            letter-spacing: 0.08em;
+        }
+        .card p { color: var(--text-2); font-size: 14px; }
+        .card p + p { margin-top: 8px; }
+        .card code {
+            font-family: var(--font-mono);
+            font-size: 12.5px;
+            background: var(--bg-1);
+            border: 1px solid var(--border-1);
+            padding: 1px 6px;
+            border-radius: 4px;
+            color: var(--text-1);
+        }
+
+        /* Download panel */
+        .download {
+            margin-top: 16px;
+            padding: 28px;
+            background: var(--bg-2);
+            border: 1px solid var(--border-2);
+            border-radius: var(--r-xl);
+            display: flex; flex-direction: column; align-items: center;
+            gap: 18px;
+            text-align: center;
+            animation: fade-in 700ms 240ms var(--ease) both;
+        }
+        .download h2 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+        .download p {
+            color: var(--text-2);
+            font-size: 14.5px;
+            max-width: 540px;
+        }
+
+        .dl-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            width: 100%;
+            margin-top: 8px;
+        }
+        .dl-tile {
+            padding: 16px;
+            background: var(--bg-1);
+            border: 1px solid var(--border-1);
+            border-radius: var(--r-lg);
+            text-align: left;
+            display: flex; flex-direction: column; gap: 6px;
+            transition: background 140ms var(--ease), border-color 140ms var(--ease), transform 140ms var(--ease);
+        }
+        .dl-tile:hover {
+            background: var(--bg-3);
+            border-color: var(--border-2);
+            transform: translateY(-1px);
+        }
+        .dl-tile-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-3);
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+        .dl-tile-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .dl-tile-meta {
+            color: var(--text-2);
+            font-size: 12.5px;
+            font-family: var(--font-mono);
+        }
+
+        .dl-btn {
+            margin-top: 4px;
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 14px 22px;
+            background: var(--accent);
+            color: var(--text-on-acc);
+            border-radius: var(--r-pill);
+            font-weight: 700;
+            font-size: 15px;
+            letter-spacing: -0.01em;
+            transition: background 140ms var(--ease), transform 140ms var(--ease), box-shadow 240ms var(--ease);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 10px 30px -10px var(--accent-glow);
+        }
+        .dl-btn:hover {
+            background: var(--accent-bright);
+            transform: translateY(-1px);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 16px 36px -10px var(--accent-glow);
+        }
+        .dl-btn:active { transform: translateY(0); }
+        .dl-btn svg { width: 16px; height: 16px; }
+
+        .lm-link {
+            color: var(--text-2);
+            font-size: 13.5px;
+        }
+        .lm-link strong { color: var(--text-1); }
+
+        footer {
+            margin-top: 48px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-1);
+            text-align: center;
+            color: var(--text-3);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 30px; }
+            .centerpiece { gap: 18px; }
+            .centerpiece .icon { width: 100px; height: 100px; }
+            main { padding: 32px 16px 48px; }
+            .topbar { padding: 14px 16px; }
+            .download { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="aurora" aria-hidden="true">
+        <div class="aurora-grain"></div>
+    </div>
+
+    <div class="shell">
+
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-logo">
+                    <img src="placeholder.png" alt="Buddy AI">
+                </div>
+                <div class="brand-name">
+                    <strong>Buddy AI</strong>
+                    <span>Mini · self-hosted</span>
+                </div>
+            </div>
+            <a class="back-link" href="../index.html">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back to chat
+            </a>
+        </header>
+
+        <main>
+            <div class="container">
+
+                <div class="centerpiece" aria-hidden="false">
+                    <div class="icon" aria-label="Buddy AI logo">
+                        <img src="placeholder.png" alt="">
+                    </div>
+                    <div class="plus" aria-hidden="true">+</div>
+                    <div class="icon" aria-label="LM Studio mascot" style="background: var(--bg-elev); box-shadow: 0 20px 60px -16px rgba(0,0,0,0.6), 0 0 0 6px rgba(255,255,255,0.04);">
+                        <img src="lm.png" alt="">
+                    </div>
+                </div>
+
+                <div class="headline">
+                    <span class="eyebrow">Self-hosted · requires setup</span>
+                    <h1><span class="accent">Mini</span> — trained in the stratosphere.</h1>
+                    <p class="lede">
+                        Mini is a fine-tuned, from-scratch language model trained by the SJDB Robotics Club.
+                        <strong>Pro</strong> was the teacher model that helped train it — the cloud endpoint
+                        you already know is the bigger sibling. Run Mini locally, fully on your own machine.
+                    </p>
+                </div>
+
+                <div class="sections">
+                    <div class="card">
+                        <h3><span class="num">01</span> What it is</h3>
+                        <p>
+                            A small, hand-rolled language model. <code>Q4_K_M</code> quantised for
+                            everyday laptops. The teacher model — Pro — guided Mini's training, so it
+                            speaks with a similar voice at a fraction of the size.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <h3><span class="num">02</span> Self-hosted</h3>
+                        <p>
+                            Mini is a <strong>self-hosted model and requires technical setup</strong>.
+                            You'll need <a href="https://lmstudio.ai" target="_blank" rel="noopener noreferrer">LM Studio</a>
+                            (free, runs on macOS / Windows / Linux) and a few minutes to point it at our preset.
+                        </p>
+                    </div>
+                    <div class="card">
+                        <h3><span class="num">03</span> Privacy</h3>
+                        <p>
+                            Once it's running, nothing leaves your computer. No telemetry, no
+                            server logs, no API keys. Great for coursework, sensitive prompts, and
+                            experimenting without rate limits.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="download">
+                    <h2>Run it yourself</h2>
+                    <p>
+                        We recommend <a href="https://lmstudio.ai" target="_blank" rel="noopener noreferrer">lmstudio.ai</a>.
+                        Download the preset below, drop it into LM Studio, and you're a click away from chatting.
+                    </p>
+
+                    <div class="dl-grid">
+                        <a class="dl-tile" href="model.gguf" download>
+                            <span class="dl-tile-label">Model</span>
+                            <span class="dl-tile-name">buddy-mini.gguf</span>
+                            <span class="dl-tile-meta">~505 MB · GGUF · Q4_K_M</span>
+                        </a>
+                        <a class="dl-tile" href="BF1.preset.json" download>
+                            <span class="dl-tile-label">Preset</span>
+                            <span class="dl-tile-name">BF1.preset.json</span>
+                            <span class="dl-tile-meta">LM Studio preset · drop-in</span>
+                        </a>
+                    </div>
+
+                    <a class="dl-btn" href="model.gguf" download>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Download the model
+                    </a>
+
+                    <p class="lm-link">
+                        After downloading, open <strong>LM Studio</strong> → <strong>Presets</strong> → import <code>BF1.preset.json</code> → load <code>buddy-mini.gguf</code>.
+                    </p>
+                </div>
+
+                <footer>
+                    Buddy AI · student build · run it your way
+                </footer>
+            </div>
+        </main>
+    </div>
+
+</body>
+</html>

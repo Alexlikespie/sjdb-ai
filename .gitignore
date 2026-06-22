@@ -1,1 +1,4 @@
 .env
+/public/index_original.html
+public/mini-html/model.gguf
+**/model.gguf
